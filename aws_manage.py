@@ -47,16 +47,13 @@ import sys
 
 try:
     from mysettings import AWS
+    from mysettings import remote_dir
     from mysettings import APP
     from mysettings import github_user
 except:
     print """Error: You need to create a myettings.py file
                  with your amazon secret variables!"""
     sys.exit(1)
-
-appname = 'app.py'
-remote_dir = '/home/ec2-user/'
-
 
 
 def create_instance():
@@ -94,42 +91,27 @@ def set_env(ipa):
 def install_web(ipa):
     set_env(ipa)
     
-    remote_dir = '/home/ec2-user/'
-    
+    #install pip first        
     sudo('curl -O http://pypi.python.org/packages/source/p/pip/pip-1.0.tar.gz')
     run('tar xvfz pip-1.0.tar.gz')
 
     sudo('cd pip-1.0 && python setup.py install')
 
-    #sudo('pip install flask-bootstrap')
-
-    # start nginx
-    #sudo('yum install -y git nginx')
-
-    #put('nginx.conf', '/etc/nginx/', use_sudo=True)
-    #sudo('service nginx start')
-
+    #now pip install all the requirements (you might want to install gunicorn/ nginx for real web apps)
     put('requirements.txt', remote_dir)
     sudo('pip install -r %s/requirements.txt' % (remote_dir))
 
-    #pip install 
-    #sudo yum install numpy
-    
     put(appname,remote_dir)
 
 
-
-
 def checkout_github():    
-    '''
-    # Code from GitHub
+    ''' check out a github repo to the server '''
     github_fingerprint = "github.com,ABC ssh-rsa ..."
 
     sudo(""" echo '%s' >> .ssh/known_hosts """ % github_fingerprint , pty=True)
     put("ssh-config", ".ssh/config", mode=0600)
     put('keys/deploy_key', '.ssh/', mode=0600)
-    run('git clone github:%s %s' % (settings.REPO, remote_code_dir) )
-    '''
+    run('git clone github:%s %s' % (settings.REPO, remote_code_dir) )    
 
 
 def runapp(instance):
@@ -141,17 +123,10 @@ def runapp(instance):
     
 
 def copy(ipa,from_file,to_dir=None):
-    ''' copy the app and run it '''
+    ''' copy a file to the server '''
     set_env(ipa)
-    remote_dir = '/home/ec2-user/'
     if to_dir:
         remote_dir+=to_dir
-
-    #put(localwd + appname,remote_dir + 'showcase/' + appname)
-    #return
-
-    #appdir = localwd + '/app'
-    #sudo('rm -if ' + appdir)
 
     put(from_file,remote_dir)
 

@@ -6,6 +6,9 @@ github_user = 'YOUR GITHUB USER'
 # Github Repo
 PROJECT = "YOUR PROJECT"
 
+#this is the AWS standard home
+remote_dir = '/home/ec2-user/'
+
 REPO = '%s/%s.git' % (github_user,PROJECT)
 
 # Here lie the Amazon secrets
